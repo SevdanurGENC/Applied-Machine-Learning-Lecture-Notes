@@ -2,12 +2,13 @@ Modellerin ön hazırlık aşamaları ihtiyaca göre değiştirilebilir.
 
 Öznitelik Seçimi yapılırken: SelectKBest kullanarak hedef değişkenle en yüksek ilişkiye sahip 5 özniteliği seçtik.
 Sonrasında Model Eğitimi: Sadece en iyi özelliklerle modelleri yeniden eğittik.
-
+```python
 # En iyi özellikleri seçme
 selector = SelectKBest(score_func=f_regression, k=5)
 X_selected = selector.fit_transform(X, y)
 selected_features = X.columns[selector.get_support()]
 print("Seçilen Öznitelikler:", selected_features)
+```
 
 Başka teknikler geliştirmek istersek:
 1. Mutual Information (Karşılıklı Bilgi)
