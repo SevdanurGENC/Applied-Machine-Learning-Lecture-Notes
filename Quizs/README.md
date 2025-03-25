@@ -66,59 +66,59 @@ print("Random Forest Seçilen Öznitelikler:", selected_features_rf)
 ```
 
 6. Variance Threshold (Varyans Eşiği)
-   ```python
-   from sklearn.feature_selection import VarianceThreshold
+```python
+from sklearn.feature_selection import VarianceThreshold
 
-   selector = VarianceThreshold(threshold=0.1)
-   X_selected_variance = selector.fit_transform(X)
-   selected_features_variance = X.columns[selector.get_support()]
-   print("Variance Threshold Seçilen Öznitelikler:", selected_features_variance)
-   ```
+selector = VarianceThreshold(threshold=0.1)
+X_selected_variance = selector.fit_transform(X)
+selected_features_variance = X.columns[selector.get_support()]
+print("Variance Threshold Seçilen Öznitelikler:", selected_features_variance)
+```
 
 7. F-Regression (Klasik İstatistiksel Yöntem)
-   ```python
-   from sklearn.feature_selection import f_regression
+```python
+from sklearn.feature_selection import f_regression
 
-   selector = SelectKBest(score_func=f_regression, k=5)
-   X_selected_freg = selector.fit_transform(X, y)
-   selected_features_freg = X.columns[selector.get_support()]
-   print("F-Regression Seçilen Öznitelikler:", selected_features_freg)
-   ```
+selector = SelectKBest(score_func=f_regression, k=5)
+X_selected_freg = selector.fit_transform(X, y)
+selected_features_freg = X.columns[selector.get_support()]
+print("F-Regression Seçilen Öznitelikler:", selected_features_freg)
+```
 
 8. Elastic Net (L1 ve L2 Regülerleştirme Kombinasyonu)
-   ```python
-   from sklearn.linear_model import ElasticNet
-   from sklearn.feature_selection import SelectFromModel
+```python
+from sklearn.linear_model import ElasticNet
+from sklearn.feature_selection import SelectFromModel
 
-   enet = ElasticNet(alpha=0.1, l1_ratio=0.5)
-   enet.fit(X, y)
-   selector = SelectFromModel(enet, prefit=True)
-   X_selected_enet = selector.transform(X)
-   selected_features_enet = X.columns[selector.get_support()]
-   print("Elastic Net Seçilen Öznitelikler:", selected_features_enet)
-   ```
+enet = ElasticNet(alpha=0.1, l1_ratio=0.5)
+enet.fit(X, y)
+selector = SelectFromModel(enet, prefit=True)
+X_selected_enet = selector.transform(X)
+selected_features_enet = X.columns[selector.get_support()]
+print("Elastic Net Seçilen Öznitelikler:", selected_features_enet)
+```
 
 9. SHAP (Shapley Additive Explanations)
-   ```python
-   import shap
+```python
+import shap
 
-   model = RandomForestRegressor(n_estimators=100)
-   model.fit(X, y)
-   explainer = shap.Explainer(model, X)
-   shap_values = explainer(X)
-   shap.summary_plot(shap_values, X)
-   ```
+model = RandomForestRegressor(n_estimators=100)
+model.fit(X, y)
+explainer = shap.Explainer(model, X)
+shap_values = explainer(X)
+shap.summary_plot(shap_values, X)
+```
 
 10. Boruta Algorithm (Random Forest ile Seçim)
-   ```python
-   from boruta import BorutaPy
+```python
+from boruta import BorutaPy
 
-   rf = RandomForestRegressor(n_jobs=-1)
-   boruta = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=42)
-   boruta.fit(X.values, y.values)
+rf = RandomForestRegressor(n_jobs=-1)
+boruta = BorutaPy(rf, n_estimators='auto', verbose=2, random_state=42)
+boruta.fit(X.values, y.values)
 
-   selected_features_boruta = X.columns[boruta.support_]
-   print("Boruta Seçilen Öznitelikler:", selected_features_boruta)
-   ```
+selected_features_boruta = X.columns[boruta.support_]
+print("Boruta Seçilen Öznitelikler:", selected_features_boruta)
+```
 
 Bu öznitelik seçme tekniklerini de lütfen deneyerek sonuçları alınız ve karşılaştırınız (her defasında veri kümesinde tek bir öznitelik seçme tekniği kullanınız, birden fazla kullanılmaz).
