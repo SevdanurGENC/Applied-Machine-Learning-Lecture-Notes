@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EDA Quiz — Uygulamalı Makine Öğrenmesi</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d0f14;
+    --surface: #161922;
+    --surface2: #1e2330;
+    --border: #2a3045;
+    --accent: #5b9cf6;
+    --accent2: #a78bfa;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --mono: 'Space Mono', monospace;
+    --sans: 'DM Sans', sans-serif;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  /* ── Header ── */
+  .header {
+    background: linear-gradient(135deg, #0d1b3e 0%, #1a1040 50%, #0d1b3e 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 48px 32px 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(91,156,246,0.12) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 50%, rgba(167,139,250,0.10) 0%, transparent 60%);
+  }
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    position: relative;
+  }
+  .header h1 {
+    font-family: var(--mono);
+    font-size: clamp(22px, 4vw, 36px);
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    position: relative;
+  }
+  .header h1 span { color: var(--accent); }
+  .header-sub {
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 14px;
+    position: relative;
+  }
+  .stats-row {
+    display: flex;
+    justify-content: center;
+    gap: 32px;
+    margin-top: 28px;
+    position: relative;
+  }
+  .stat {
+    text-align: center;
+  }
+  .stat-num {
+    font-family: var(--mono);
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .stat-label {
+    font-size: 11px;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-top: 2px;
+  }
+
+  /* ── Progress ── */
+  .progress-bar-wrap {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 32px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+  .progress-bar {
+    flex: 1;
+    height: 4px;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 4px;
+    transition: width 0.4s ease;
+    width: 0%;
+  }
+  .progress-text {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--muted);
+    white-space: nowrap;
+  }
+
+  /* ── Quiz container ── */
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+  }
+
+  /* ── Question card ── */
+  .question-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 32px;
+    margin-bottom: 20px;
+    transition: border-color 0.3s;
+    animation: fadeUp 0.4s ease both;
+  }
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .question-card:nth-child(2)  { animation-delay: 0.05s; }
+  .question-card:nth-child(3)  { animation-delay: 0.10s; }
+  .question-card:nth-child(4)  { animation-delay: 0.15s; }
+  .question-card:nth-child(5)  { animation-delay: 0.20s; }
+  .question-card:nth-child(6)  { animation-delay: 0.25s; }
+  .question-card:nth-child(7)  { animation-delay: 0.30s; }
+  .question-card:nth-child(8)  { animation-delay: 0.35s; }
+  .question-card:nth-child(9)  { animation-delay: 0.40s; }
+  .question-card:nth-child(10) { animation-delay: 0.45s; }
+
+  .question-card.answered { border-color: var(--accent); }
+  .question-card.correct  { border-color: var(--green); background: #0f2a20; }
+  .question-card.wrong    { border-color: var(--red);   background: #2a0f0f; }
+
+  .q-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  .q-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    background: rgba(91,156,246,0.12);
+    border: 1px solid rgba(91,156,246,0.25);
+    border-radius: 6px;
+    padding: 4px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .q-text {
+    font-size: 16px;
+    font-weight: 500;
+    line-height: 1.5;
+    color: var(--text);
+  }
+  .q-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--muted);
+    background: var(--surface2);
+    border-radius: 4px;
+    padding: 2px 6px;
+    margin-bottom: 16px;
+    display: inline-block;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ── Options ── */
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 16px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .option:hover:not(.disabled) {
+    border-color: var(--accent);
+    background: rgba(91,156,246,0.08);
+  }
+  .option.selected { border-color: var(--accent); background: rgba(91,156,246,0.12); }
+  .option.correct-opt {
+    border-color: var(--green) !important;
+    background: rgba(52,211,153,0.12) !important;
+  }
+  .option.wrong-opt {
+    border-color: var(--red) !important;
+    background: rgba(248,113,113,0.12) !important;
+  }
+  .option.disabled { cursor: default; }
+
+  .opt-letter {
+    font-family: var(--mono);
+    font-size: 12px;
+    font-weight: 700;
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    background: var(--border);
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s;
+  }
+  .option.selected .opt-letter { background: var(--accent); color: #fff; }
+  .option.correct-opt .opt-letter { background: var(--green); color: #fff; }
+  .option.wrong-opt .opt-letter   { background: var(--red);   color: #fff; }
+
+  .opt-text { font-size: 14px; color: var(--text); line-height: 1.4; }
+
+  /* ── Explanation ── */
+  .explanation {
+    margin-top: 16px;
+    padding: 14px 16px;
+    background: rgba(91,156,246,0.07);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 8px 8px 0;
+    font-size: 13px;
+    color: #94a3b8;
+    line-height: 1.6;
+    display: none;
+  }
+  .explanation.show { display: block; }
+  .explanation strong { color: var(--accent); }
+
+  /* ── Result ── */
+  #result-panel {
+    display: none;
+    text-align: center;
+    padding: 60px 32px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    margin-top: 32px;
+    animation: fadeUp 0.5s ease;
+  }
+  .result-emoji { font-size: 64px; margin-bottom: 16px; }
+  .result-score {
+    font-family: var(--mono);
+    font-size: 56px;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 8px;
+  }
+  .result-label {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 8px;
+  }
+  .result-sub {
+    color: var(--muted);
+    font-size: 14px;
+    margin-bottom: 32px;
+  }
+  .result-breakdown {
+    display: flex;
+    justify-content: center;
+    gap: 24px;
+    margin-bottom: 32px;
+  }
+  .breakdown-item {
+    text-align: center;
+    padding: 16px 20px;
+    background: var(--surface2);
+    border-radius: 12px;
+    min-width: 80px;
+  }
+  .breakdown-num { font-family: var(--mono); font-size: 24px; font-weight: 700; }
+  .breakdown-num.g { color: var(--green); }
+  .breakdown-num.r { color: var(--red); }
+  .breakdown-num.y { color: var(--yellow); }
+  .breakdown-label { font-size: 11px; color: var(--muted); margin-top: 4px; text-transform: uppercase; letter-spacing: 1px; }
+
+  /* ── Buttons ── */
+  .btn-submit {
+    display: block;
+    width: 100%;
+    max-width: 320px;
+    margin: 32px auto 0;
+    padding: 16px 32px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none;
+    border-radius: 12px;
+    color: #fff;
+    font-family: var(--mono);
+    font-size: 14px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-submit:hover { opacity: 0.9; transform: translateY(-1px); }
+  .btn-submit:active { transform: translateY(0); }
+  .btn-submit:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+  .btn-retry {
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid var(--accent);
+    border-radius: 10px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 13px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-retry:hover { background: rgba(91,156,246,0.1); }
+
+  /* ── Code block ── */
+  code {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: rgba(255,255,255,0.07);
+    padding: 2px 6px;
+    border-radius: 4px;
+    color: #a5f3fc;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 600px) {
+    .stats-row { gap: 20px; }
+    .question-card { padding: 20px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-tag">Uygulamalı Makine Öğrenmesi</div>
+  <h1>Keşifsel Veri Analizi<br><span>EDA</span> — Mini Quiz</h1>
+  <p class="header-sub">EDA_Ders_Notu_01 · 10 Soru · Çoktan Seçmeli</p>
+  <div class="stats-row">
+    <div class="stat"><div class="stat-num">10</div><div class="stat-label">Soru</div></div>
+    <div class="stat"><div class="stat-num">5</div><div class="stat-label">Konu</div></div>
+    <div class="stat"><div class="stat-num">~8dk</div><div class="stat-label">Süre</div></div>
+  </div>
+</div>
+
+<div class="progress-bar-wrap">
+  <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  <div class="progress-text" id="progress-text">0 / 10</div>
+</div>
+
+<div class="container">
+  <div id="quiz-form"></div>
+
+  <button class="btn-submit" id="submit-btn" onclick="submitQuiz()" disabled>
+    SONUÇLARI GÖSTER →
+  </button>
+
+  <div id="result-panel">
+    <div class="result-emoji" id="result-emoji">🎉</div>
+    <div class="result-score" id="result-score"></div>
+    <div class="result-label" id="result-label"></div>
+    <div class="result-sub" id="result-sub"></div>
+    <div class="result-breakdown">
+      <div class="breakdown-item">
+        <div class="breakdown-num g" id="correct-count">0</div>
+        <div class="breakdown-label">Doğru</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-num r" id="wrong-count">0</div>
+        <div class="breakdown-label">Yanlış</div>
+      </div>
+      <div class="breakdown-item">
+        <div class="breakdown-num y" id="empty-count">0</div>
+        <div class="breakdown-label">Boş</div>
+      </div>
+    </div>
+    <button class="btn-retry" onclick="retryQuiz()">↺ Tekrar Dene</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS = [
+  {
+    topic: "EDA Temelleri",
+    text: "EDA kavramını ilk sistematik olarak ortaya koyan istatistikçi kimdir?",
+    options: ["Karl Pearson", "John Tukey", "Ronald Fisher", "George Box"],
+    answer: 1,
+    explanation: "<strong>John Tukey</strong>, 1977 yılında yayımladığı <em>Exploratory Data Analysis</em> kitabıyla bu kavramı istatistiğe kazandırdı. Box plot gibi araçları da o geliştirdi."
+  },
+  {
+    topic: "Eksik Veri",
+    text: "Ankette 'Gelir' sorusunu yalnızca yüksek gelirli kişiler boş bırakmışsa, bu eksik veri mekanizması nedir?",
+    options: ["MCAR (Tamamen Rastgele Eksik)", "MAR (Rastgele Eksik)", "MNAR (Rastgele Olmayan Eksik)", "Yapısal Eksik"],
+    answer: 2,
+    explanation: "<strong>MNAR (Missing Not At Random)</strong>: Verinin eksik olması, o verinin <em>kendi değeriyle</em> ilişkilidir. Yüksek gelirliler gelirini paylaşmak istemediği için boş bırakmıştır — eksiklik rastgele değil, değere bağlıdır."
+  },
+  {
+    topic: "Veri Dağılımı",
+    text: "Bir değişkenin çarpıklık (skewness) değeri +2.5 ise bu ne anlama gelir?",
+    options: [
+      "Sola çarpık, kuyruk sola uzanıyor",
+      "Sağa çarpık, kuyruk sağa uzanıyor, ortalama > medyan",
+      "Normal dağılım",
+      "Bimodal (çift tepeli) dağılım"
+    ],
+    answer: 1,
+    explanation: "<strong>Pozitif çarpıklık (sağa çarpık)</strong>: Kuyruk sağa uzanır. Ortalama > Medyan > Mod sıralaması geçerlidir. Titanic veri setindeki <code>fare</code> değişkeni buna güzel bir örnektir."
+  },
+  {
+    topic: "Görselleştirme",
+    text: "Kategorik bir değişkeni sayısal bir değişkenle karşılaştırmak için hangisi uygun DEĞİLDİR?",
+    options: ["Box Plot", "Violin Plot", "Scatter Plot (düz)", "Strip Plot"],
+    answer: 2,
+    explanation: "Düz <strong>Scatter Plot</strong>, iki <em>sayısal</em> değişken arasındaki ilişkiyi gösterir. Kategorik vs. sayısal için Box Plot, Violin Plot veya Strip Plot kullanılmalıdır. Kategorik eksende anlamsız konumlama oluşur."
+  },
+  {
+    topic: "İstatistiksel Testler",
+    text: "Küçük örneklemde (n < 50) normallik kontrolü için hangi test tercih edilir?",
+    options: ["Kolmogorov-Smirnov", "Shapiro-Wilk", "Anderson-Darling", "Chi-square"],
+    answer: 1,
+    explanation: "<strong>Shapiro-Wilk testi</strong> küçük örneklem (n < 50) için en güçlü normallik testidir. Kolmogorov-Smirnov büyük örneklemlerde, Chi-square ise kategorik veriler için uygundur."
+  },
+  {
+    topic: "Aykırı Değer",
+    text: "IQR yöntemiyle aykırı değer sınırları nasıl hesaplanır?",
+    options: [
+      "Ortalama ± 2 × Standart Sapma",
+      "Q1 − 1.5×IQR ve Q3 + 1.5×IQR",
+      "Medyan ± 3 × MAD",
+      "Min ve Max arasındaki %5 ve %95 kantiller"
+    ],
+    answer: 1,
+    explanation: "Klasik Tukey kuralı: Alt sınır = <strong>Q1 − 1.5×IQR</strong>, Üst sınır = <strong>Q3 + 1.5×IQR</strong>. IQR = Q3 − Q1'dir. Bu sınırların dışında kalan gözlemler aykırı kabul edilir."
+  },
+  {
+    topic: "Korelasyon",
+    text: "Pearson korelasyon katsayısı r = −0.85 olduğunda ne söylenebilir?",
+    options: [
+      "Zayıf pozitif doğrusal ilişki",
+      "Güçlü negatif doğrusal ilişki, nedensellik kanıtlanmıştır",
+      "Güçlü negatif doğrusal ilişki, nedensellik çıkarılamaz",
+      "Değişkenler arasında ilişki yoktur"
+    ],
+    answer: 2,
+    explanation: "<strong>|r| = 0.85</strong> güçlü bir ilişkiyi gösterir. Negatif işaret ters yönlü ilişkiye işaret eder. Ancak Pearson yalnızca doğrusal ilişkiyi ölçer ve <strong>korelasyon ≠ nedensellik</strong> — bu temel kural asla unutulmamalıdır."
+  },
+  {
+    topic: "Görselleştirme",
+    text: "Hangisi eksik veri örüntüsünü görselleştirmek için özel olarak tasarlanmış bir kütüphanedir?",
+    options: ["seaborn", "plotly", "missingno", "bokeh"],
+    answer: 2,
+    explanation: "<strong>missingno</strong> kütüphanesi tam olarak bu iş için geliştirilmiştir. <code>msno.matrix()</code>, <code>msno.bar()</code> ve <code>msno.heatmap()</code> ile eksik veri yapısını ve ilişkilerini görselleştirir."
+  },
+  {
+    topic: "Çok Değişkenli Analiz",
+    text: "PCA (Principal Component Analysis) EDA'da ne amaçla kullanılır?",
+    options: [
+      "Aykırı değerleri otomatik temizlemek için",
+      "Yüksek boyutlu veriyi daha az boyutta görselleştirmek için",
+      "Eksik verileri doldurmak için",
+      "Kategorik değişkenleri encode etmek için"
+    ],
+    answer: 1,
+    explanation: "<strong>PCA</strong>, çok sayıda değişkeni varyansı en çok açıklayan az sayıda bileşene indirger. EDA'da özellikle 2D görselleştirme için kullanılır: 10+ boyutlu veriyi 2 bileşene projekte ederek küme yapısını keşfedebilirsiniz."
+  },
+  {
+    topic: "EDA Temelleri",
+    text: "Python'da df.describe() çağrısı varsayılan olarak hangi istatistikleri döndürür?",
+    options: [
+      "count, mean, std, min, %25, %50, %75, max",
+      "count, mean, median, mode, std, variance",
+      "mean, std, skewness, kurtosis, min, max",
+      "count, sum, mean, std, min, max"
+    ],
+    answer: 0,
+    explanation: "<code>df.describe()</code> 8 istatistik döndürür: <strong>count, mean, std, min, %25, %50 (medyan), %75, max</strong>. Mod ve varyans dahil değildir. Ayrıca yalnızca sayısal sütunlara uygulanır."
+  }
+];
+
+let answers = new Array(QUESTIONS.length).fill(null);
+let submitted = false;
+
+function buildQuiz() {
+  const form = document.getElementById('quiz-form');
+  form.innerHTML = '';
+
+  QUESTIONS.forEach((q, qi) => {
+    const letters = ['A', 'B', 'C', 'D'];
+    const card = document.createElement('div');
+    card.className = 'question-card';
+    card.id = `card-${qi}`;
+
+    card.innerHTML = `
+      <div class="q-header">
+        <span class="q-num">S${qi + 1}</span>
+        <span class="q-text">${q.text}</span>
+      </div>
+      <div class="q-tag">${q.topic}</div>
+      <div class="options" id="opts-${qi}">
+        ${q.options.map((opt, oi) => `
+          <div class="option" id="opt-${qi}-${oi}" onclick="selectOption(${qi}, ${oi})">
+            <span class="opt-letter">${letters[oi]}</span>
+            <span class="opt-text">${opt}</span>
+          </div>
+        `).join('')}
+      </div>
+      <div class="explanation" id="exp-${qi}">
+        💡 ${q.explanation}
+      </div>
+    `;
+    form.appendChild(card);
+  });
+}
+
+function selectOption(qi, oi) {
+  if (submitted) return;
+
+  // Deselect previous
+  if (answers[qi] !== null) {
+    document.getElementById(`opt-${qi}-${answers[qi]}`).classList.remove('selected');
+  }
+
+  answers[qi] = oi;
+  document.getElementById(`opt-${qi}-${oi}`).classList.add('selected');
+  document.getElementById(`card-${qi}`).classList.add('answered');
+
+  updateProgress();
+  checkAllAnswered();
+}
+
+function updateProgress() {
+  const answered = answers.filter(a => a !== null).length;
+  const pct = (answered / QUESTIONS.length) * 100;
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `${answered} / ${QUESTIONS.length}`;
+}
+
+function checkAllAnswered() {
+  const allDone = answers.every(a => a !== null);
+  document.getElementById('submit-btn').disabled = !allDone;
+}
+
+function submitQuiz() {
+  if (submitted) return;
+  submitted = true;
+  document.getElementById('submit-btn').style.display = 'none';
+
+  let correct = 0, wrong = 0, empty = 0;
+
+  QUESTIONS.forEach((q, qi) => {
+    const card = document.getElementById(`card-${qi}`);
+    const userAns = answers[qi];
+    const rightAns = q.answer;
+
+    // Disable all options
+    q.options.forEach((_, oi) => {
+      const opt = document.getElementById(`opt-${qi}-${oi}`);
+      opt.classList.add('disabled');
+      if (oi === rightAns) opt.classList.add('correct-opt');
+    });
+
+    if (userAns === null) {
+      empty++;
+      card.className = 'question-card';
+    } else if (userAns === rightAns) {
+      correct++;
+      card.className = 'question-card correct';
+      document.getElementById(`opt-${qi}-${userAns}`).classList.remove('selected');
+    } else {
+      wrong++;
+      card.className = 'question-card wrong';
+      document.getElementById(`opt-${qi}-${userAns}`).classList.remove('selected');
+      document.getElementById(`opt-${qi}-${userAns}`).classList.add('wrong-opt');
+    }
+
+    // Show explanation
+    document.getElementById(`exp-${qi}`).classList.add('show');
+  });
+
+  // Show result
+  const pct = Math.round((correct / QUESTIONS.length) * 100);
+  const panel = document.getElementById('result-panel');
+  panel.style.display = 'block';
+
+  document.getElementById('result-score').textContent = `%${pct}`;
+  document.getElementById('correct-count').textContent = correct;
+  document.getElementById('wrong-count').textContent = wrong;
+  document.getElementById('empty-count').textContent = empty;
+
+  let emoji, label, sub;
+  if (pct >= 90)      { emoji = '🏆'; label = 'Mükemmel!'; sub = 'EDA konusunda hakimiyetin çok güçlü. Harika iş!'; }
+  else if (pct >= 70) { emoji = '🎯'; label = 'Çok İyi!';  sub = 'Temel kavramları iyi biliyorsun. Birkaç konuya daha bak.'; }
+  else if (pct >= 50) { emoji = '📚'; label = 'İyi Başlangıç'; sub = 'Temel konuları anladın. Notebook\'u tekrar gözden geçir.'; }
+  else                { emoji = '💪'; label = 'Devam Et!'; sub = 'EDA\'nın temellerini yeniden çalışmanı öneririm.'; }
+
+  document.getElementById('result-emoji').textContent = emoji;
+  document.getElementById('result-label').textContent = label;
+  document.getElementById('result-sub').textContent = sub;
+
+  panel.scrollIntoView({ behavior: 'smooth', block: 'center' });
+
+  // Update progress to 100
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-text').textContent = `Tamamlandı ✓`;
+}
+
+function retryQuiz() {
+  answers = new Array(QUESTIONS.length).fill(null);
+  submitted = false;
+  document.getElementById('result-panel').style.display = 'none';
+  document.getElementById('submit-btn').style.display = 'block';
+  document.getElementById('submit-btn').disabled = true;
+  document.getElementById('progress-fill').style.width = '0%';
+  document.getElementById('progress-text').textContent = '0 / 10';
+  buildQuiz();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

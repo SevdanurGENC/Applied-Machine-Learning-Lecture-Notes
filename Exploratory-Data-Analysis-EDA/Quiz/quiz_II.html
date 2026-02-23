@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandas ile Veri Analizi — Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #10b981;
+    --accent2: #06b6d4;
+    --bg: #0c0e14;
+    --surface: #13151e;
+    --surface2: #1a1d2a;
+    --border: #252836;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #5a6480;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  .header {
+    background: linear-gradient(135deg, #021a0f 0%, #063018 50%, #021a0f 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 32px 44px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .nb-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 20px;
+    padding: 5px 14px; margin-bottom: 18px; text-transform: uppercase;
+    background: rgba(0,0,0,0.3);
+  }
+  .header h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(20px, 3.5vw, 32px); font-weight: 700;
+    color: #fff; line-height: 1.25; margin-bottom: 10px;
+  }
+  .header h1 em { color: var(--accent); font-style: normal; }
+  .header-sub { color: rgba(255,255,255,0.45); font-size: 13px; }
+  .stats { display: flex; justify-content: center; gap: 36px; margin-top: 26px; }
+  .stat-num { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .prog-bar-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 28px; display: flex; align-items: center; gap: 14px;
+  }
+  .prog-bar { flex: 1; height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px; transition: width 0.4s ease; width: 0%;
+  }
+  .prog-text { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .container { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+  .q-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px; margin-bottom: 18px;
+    transition: border-color 0.25s;
+    animation: up 0.35s ease both;
+    animation-delay: calc(var(--i) * 0.05s);
+  }
+  @keyframes up { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
+  .q-card.answered { border-color: var(--accent); }
+  .q-card.correct   { border-color: var(--green); background: #0c2018; }
+  .q-card.wrong     { border-color: var(--red);   background: #200c0c; }
+  .q-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+  .q-n {
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent);
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+  }
+  .q-txt { font-size: 15px; font-weight: 500; line-height: 1.55; }
+  .q-topic {
+    font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted);
+    background: var(--surface2); border-radius: 4px; padding: 2px 7px;
+    display: inline-block; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+  }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; cursor: pointer; transition: all 0.18s; user-select: none;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: rgba(255,255,255,0.04); }
+  .opt.selected { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+  .opt.cor { border-color: var(--green) !important; background: rgba(52,211,153,0.1) !important; }
+  .opt.wrn { border-color: var(--red) !important; background: rgba(248,113,113,0.1) !important; }
+  .opt.disabled { cursor: default; }
+  .opt-l {
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 5px;
+    background: var(--border); color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.18s;
+  }
+  .opt.selected .opt-l { background: var(--accent); color: #fff; }
+  .opt.cor .opt-l { background: var(--green); color: #fff; }
+  .opt.wrn .opt-l { background: var(--red); color: #fff; }
+  .opt-txt { font-size: 13.5px; line-height: 1.4; }
+  .exp {
+    margin-top: 14px; padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 7px 7px 0;
+    font-size: 12.5px; color: #8898b0; line-height: 1.65;
+    display: none;
+  }
+  .exp.show { display: block; }
+  .exp strong { color: var(--accent); }
+  code {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; color: #7dd3fc;
+  }
+  #result {
+    display: none; text-align: center;
+    padding: 56px 28px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; margin-top: 28px; animation: up 0.5s ease;
+  }
+  .r-emoji { font-size: 60px; margin-bottom: 14px; }
+  .r-score {
+    font-family: 'Space Mono', monospace; font-size: 52px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 6px;
+  }
+  .r-label { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+  .r-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+  .r-row { display: flex; justify-content: center; gap: 20px; margin-bottom: 28px; }
+  .r-item { text-align: center; padding: 14px 18px; background: var(--surface2); border-radius: 10px; min-width: 72px; }
+  .r-num { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; }
+  .r-num.g { color: var(--green); } .r-num.r { color: var(--red); } .r-num.y { color: var(--yellow); }
+  .r-lbl { font-size: 10px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+  .btn-sub {
+    display: block; width: 100%; max-width: 300px;
+    margin: 28px auto 0; padding: 15px 28px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 10px; color: #fff;
+    font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-sub:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-sub:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .btn-retry {
+    padding: 11px 24px; background: transparent;
+    border: 1px solid var(--accent); border-radius: 9px;
+    color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .btn-retry:hover { background: rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="nb-badge">Python ile Veri Analizi · Bolum II</div>
+  <h1>Pandas ile Veri Analizi</h1>
+  <p class="header-sub">DataFrame · Seri · Okuma/Yazma · Temel Islemler</p>
+  <div class="stats">
+    <div><div class="stat-num">10</div><div class="stat-label">Soru</div></div>
+    <div><div class="stat-num">5</div><div class="stat-label">Konu</div></div>
+    <div><div class="stat-num">~8dk</div><div class="stat-label">Süre</div></div>
+  </div>
+</div>
+<div class="prog-bar-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+  <div class="prog-text" id="pt">0 / 10</div>
+</div>
+<div class="container">
+  <div id="qform"></div>
+  <button class="btn-sub" id="sbtn" onclick="showResults()" disabled>SONUÇLARI GÖSTER →</button>
+  <div id="result">
+    <div class="r-emoji" id="re"></div>
+    <div class="r-score" id="rs"></div>
+    <div class="r-label" id="rl"></div>
+    <div class="r-sub" id="rsu"></div>
+    <div class="r-row">
+      <div class="r-item"><div class="r-num g" id="rc">0</div><div class="r-lbl">Doğru</div></div>
+      <div class="r-item"><div class="r-num r" id="rw">0</div><div class="r-lbl">Yanlış</div></div>
+      <div class="r-item"><div class="r-num y" id="rb">0</div><div class="r-lbl">Boş</div></div>
+    </div>
+    <button class="btn-retry" onclick="retryQuiz()">↺ Tekrar Dene</button>
+  </div>
+</div>
+<script>
+const QS = [{"topic": "Pandas Temelleri", "text": "df.loc[] ile df.iloc[] arasındaki temel fark nedir?", "options": ["loc hızlı, iloc yavaştır", "loc etiket tabanlı, iloc konum tabanlı erişimdir", "loc satır, iloc sütun seçer", "İkisi aynıdır"], "answer": 1, "explanation": "<code>df.loc['A':'C']</code> → etiket ile seç. <code>df.iloc[0:3]</code> → pozisyon numarasıyla seç. Önemli fark: loc'ta bitiş <strong>dahil</strong>, iloc'ta <strong>hariç</strong>."}, {"topic": "DataFrame İşlemleri", "text": "df.dropna() varsayılan olarak ne yapar?", "options": ["Tüm NaN'ları 0 ile doldurur", "En az bir NaN içeren satırları kaldırır", "Tüm NaN içeren sütunları kaldırır", "NaN içeren sütunları kaldırır"], "answer": 1, "explanation": "Varsayılan: axis=0 ve how='any' — <strong>en az bir NaN içeren satırı siler</strong>. how='all' tüm değerleri NaN olanı siler. axis=1 ile sütun bazında çalışır."}, {"topic": "Veri Okuma", "text": "Büyük CSV okurken bellek tasarrufu için hangi parametrelerden yararlanılır?", "options": ["Yalnızca chunksize", "Yalnızca nrows", "Yalnızca usecols", "chunksize, nrows ve usecols — hepsi farklı durumlarda kullanılabilir"], "answer": 3, "explanation": "<code>chunksize</code> → iteratif okuma, <code>nrows</code> → sadece ilk n satır, <code>usecols</code> → gereksiz sütunları atla. <strong>Hepsi</strong> farklı durumlarda bellek tasarrufu sağlar."}, {"topic": "Gruplama", "text": "df.groupby('city')['price'].agg(['mean','count','std']) ne döndürür?", "options": ["Şehir sayısını", "Her şehir için ortalama, adet ve standart sapma", "Tüm fiyatların ortalamasını", "Hata verir"], "answer": 1, "explanation": "groupby + agg ile her grup için birden fazla istatistik hesaplanır. Sonuç: <strong>index = şehirler, sütunlar = mean/count/std</strong>."}, {"topic": "Pandas Temelleri", "text": "df['col'].value_counts(normalize=True) ne döndürür?", "options": ["Her benzersiz değerin sayısı", "Her benzersiz değerin oranı (toplam 1.0)", "Küçükten büyüğe sıralama", "Sütunun ortalaması"], "answer": 1, "explanation": "<code>normalize=True</code> ile sayılar yerine <strong>oranlar</strong> döner, toplamları 1.0'dır. Yüzdeye çevirmek için * 100 eklenebilir."}, {"topic": "DataFrame İşlemleri", "text": "df.merge(df2, on='id', how='left') SQL'deki hangi join'e karşılık gelir?", "options": ["INNER JOIN", "LEFT JOIN", "RIGHT JOIN", "FULL OUTER JOIN"], "answer": 1, "explanation": "<code>how='left'</code> → <strong>LEFT JOIN</strong>: sol tablonun tüm satırları korunur, sağ tabloda eşleşmeyenler NaN olur."}, {"topic": "Pandas Temelleri", "text": "Bir DataFrame sütununu silmek için hangi iki yöntem kullanılabilir?", "options": ["df.remove('col') veya df.pop('col')", "del df['col'] veya df.drop('col', axis=1)", "df.delete('col') veya df['col'] = None", "df.drop('col') veya df.remove('col')"], "answer": 1, "explanation": "<code>del df['col']</code> → yerinde siler. <code>df.drop('col', axis=1)</code> → yeni DataFrame döndürür. inplace=True eklenirse orijinali değiştirir."}, {"topic": "Veri Okuma", "text": "Excel dosyasının belirli sayfasını okumak için hangi parametre kullanılır?", "options": ["pd.read_excel(file, page='Sheet2')", "pd.read_excel(file, sheet_name='Sheet2')", "pd.read_excel(file, tab='Sheet2')", "pd.read_excel(file, worksheet='Sheet2')"], "answer": 1, "explanation": "<code>pd.read_excel(dosya, <strong>sheet_name='Sheet2'</strong>)</code>. Sayısal indeks de verilebilir: sheet_name=0 ilk sayfa. sheet_name=None tüm sayfaları dict döndürür."}, {"topic": "Gruplama", "text": "Pivot tablo ile groupby arasındaki temel fark nedir?", "options": ["Pivot daha hızlıdır", "groupby sadece sayısal sütunlarda çalışır", "Pivot tablo 2D özet tablo üretir, doğrudan tablo formatındadır", "groupby daha fazla fonksiyon destekler"], "answer": 2, "explanation": "<code>pd.pivot_table()</code> → satır ve sütun indeksine göre <strong>2D özet tablo</strong> üretir. groupby daha esnek; pivot table aslında groupby'ın özel bir görünümüdür."}, {"topic": "DataFrame İşlemleri", "text": "df.apply(func, axis=1) ne yapar?", "options": ["Her sütuna fonksiyon uygular", "Her satıra fonksiyon uygular", "Tüm DataFrame'e uygular", "Yalnızca sayısal sütunlara uygular"], "answer": 1, "explanation": "<code>axis=1</code> → <strong>satır bazında</strong> uygulama. axis=0 → sütun bazında. Çok sütunu birleştirerek yeni özellik üretmek için yaygın kullanılır."}];
+let ans = new Array(QS.length).fill(null);
+let done = false;
+
+function buildQuiz() {
+  const f = document.getElementById('qform');
+  f.innerHTML = '';
+  const L = ['A','B','C','D'];
+  QS.forEach((q, qi) => {
+    const c = document.createElement('div');
+    c.className = 'q-card';
+    c.id = 'c' + qi;
+    c.style.setProperty('--i', qi);
+    let optsHtml = q.options.map((o, oi) =>
+      '<div class="opt" id="opt' + qi + '_' + oi + '" onclick="pickOpt(' + qi + ',' + oi + ')">' +
+      '<span class="opt-l">' + L[oi] + '</span>' +
+      '<span class="opt-txt">' + o + '</span></div>'
+    ).join('');
+    c.innerHTML =
+      '<div class="q-top"><span class="q-n">S' + (qi+1) + '</span><span class="q-txt">' + q.text + '</span></div>' +
+      '<div class="q-topic">' + q.topic + '</div>' +
+      '<div class="opts">' + optsHtml + '</div>' +
+      '<div class="exp" id="e' + qi + '">&#128161; ' + q.explanation + '</div>';
+    f.appendChild(c);
+  });
+}
+
+function pickOpt(qi, oi) {
+  if (done) return;
+  if (ans[qi] !== null) document.getElementById('opt' + qi + '_' + ans[qi]).classList.remove('selected');
+  ans[qi] = oi;
+  document.getElementById('opt' + qi + '_' + oi).classList.add('selected');
+  document.getElementById('c' + qi).classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = ans.filter(a => a !== null).length;
+  document.getElementById('pf').style.width = (n / QS.length * 100) + '%';
+  document.getElementById('pt').textContent = n + ' / ' + QS.length;
+  document.getElementById('sbtn').disabled = (n < QS.length);
+}
+
+function showResults() {
+  if (done) return;
+  done = true;
+  document.getElementById('sbtn').style.display = 'none';
+  let cor = 0, wrn = 0, emp = 0;
+  QS.forEach((q, qi) => {
+    const ua = ans[qi], ra = q.answer;
+    const card = document.getElementById('c' + qi);
+    q.options.forEach((_, oi) => {
+      const el = document.getElementById('opt' + qi + '_' + oi);
+      el.classList.add('disabled');
+      if (oi === ra) el.classList.add('cor');
+    });
+    if (ua === null) { emp++; }
+    else if (ua === ra) {
+      cor++;
+      card.className = 'q-card correct';
+      document.getElementById('opt' + qi + '_' + ua).classList.remove('selected');
+    } else {
+      wrn++;
+      card.className = 'q-card wrong';
+      document.getElementById('opt' + qi + '_' + ua).classList.remove('selected');
+      document.getElementById('opt' + qi + '_' + ua).classList.add('wrn');
+    }
+    document.getElementById('e' + qi).classList.add('show');
+  });
+  const pct = Math.round(cor / QS.length * 100);
+  document.getElementById('rs').textContent = '%' + pct;
+  document.getElementById('rc').textContent = cor;
+  document.getElementById('rw').textContent = wrn;
+  document.getElementById('rb').textContent = emp;
+  const lvl = pct >= 90 ? ['&#127942;','Mukemmel!','Harika bir skor!'] :
+              pct >= 70 ? ['&#127919;','Cok Iyi!','Birkaç konuya tekrar bak.'] :
+              pct >= 50 ? ['&#128218;','Iyi Baslangic','Notebooku tekrar gozden gecir.'] :
+                          ['&#128170;','Devam Et!','Konulari yeniden calismani oneririm.'];
+  document.getElementById('re').innerHTML = lvl[0];
+  document.getElementById('rl').textContent = lvl[1];
+  document.getElementById('rsu').textContent = lvl[2];
+  const rp = document.getElementById('result');
+  rp.style.display = 'block';
+  rp.scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById('pf').style.width = '100%';
+  document.getElementById('pt').textContent = 'Tamamlandi ✓';
+}
+
+function retryQuiz() {
+  ans = new Array(QS.length).fill(null);
+  done = false;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('sbtn').style.display = 'block';
+  document.getElementById('sbtn').disabled = true;
+  document.getElementById('pf').style.width = '0%';
+  document.getElementById('pt').textContent = '0 / ' + QS.length;
+  buildQuiz();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+buildQuiz();
+</script>
+</body>
+</html>

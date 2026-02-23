@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pandas Ileri & Veri Manipulasyonu — Quiz</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --accent: #f59e0b;
+    --accent2: #ef4444;
+    --bg: #0c0e14;
+    --surface: #13151e;
+    --surface2: #1a1d2a;
+    --border: #252836;
+    --green: #34d399;
+    --red: #f87171;
+    --yellow: #fbbf24;
+    --text: #e2e8f0;
+    --muted: #5a6480;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; min-height: 100vh; }
+  .header {
+    background: linear-gradient(135deg, #1a0f02 0%, #301806 50%, #1a0f02 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 52px 32px 44px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .nb-badge {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 11px; letter-spacing: 3px; color: var(--accent);
+    border: 1px solid var(--accent); border-radius: 20px;
+    padding: 5px 14px; margin-bottom: 18px; text-transform: uppercase;
+    background: rgba(0,0,0,0.3);
+  }
+  .header h1 {
+    font-family: 'Space Mono', monospace;
+    font-size: clamp(20px, 3.5vw, 32px); font-weight: 700;
+    color: #fff; line-height: 1.25; margin-bottom: 10px;
+  }
+  .header h1 em { color: var(--accent); font-style: normal; }
+  .header-sub { color: rgba(255,255,255,0.45); font-size: 13px; }
+  .stats { display: flex; justify-content: center; gap: 36px; margin-top: 26px; }
+  .stat-num { font-family: 'Space Mono', monospace; font-size: 20px; font-weight: 700; color: var(--accent); }
+  .stat-label { font-size: 10px; color: rgba(255,255,255,0.35); text-transform: uppercase; letter-spacing: 1px; margin-top: 2px; }
+  .prog-bar-wrap {
+    position: sticky; top: 0; z-index: 100;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 10px 28px; display: flex; align-items: center; gap: 14px;
+  }
+  .prog-bar { flex: 1; height: 3px; background: var(--border); border-radius: 3px; overflow: hidden; }
+  .prog-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px; transition: width 0.4s ease; width: 0%;
+  }
+  .prog-text { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--muted); white-space: nowrap; }
+  .container { max-width: 760px; margin: 0 auto; padding: 36px 20px 80px; }
+  .q-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 28px; margin-bottom: 18px;
+    transition: border-color 0.25s;
+    animation: up 0.35s ease both;
+    animation-delay: calc(var(--i) * 0.05s);
+  }
+  @keyframes up { from { opacity:0; transform:translateY(14px) } to { opacity:1; transform:translateY(0) } }
+  .q-card.answered { border-color: var(--accent); }
+  .q-card.correct   { border-color: var(--green); background: #0c2018; }
+  .q-card.wrong     { border-color: var(--red);   background: #200c0c; }
+  .q-top { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+  .q-n {
+    font-family: 'Space Mono', monospace; font-size: 10px; color: var(--accent);
+    background: rgba(255,255,255,0.05); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 8px; white-space: nowrap; flex-shrink: 0; margin-top: 3px;
+  }
+  .q-txt { font-size: 15px; font-weight: 500; line-height: 1.55; }
+  .q-topic {
+    font-family: 'Space Mono', monospace; font-size: 9px; color: var(--muted);
+    background: var(--surface2); border-radius: 4px; padding: 2px 7px;
+    display: inline-block; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px;
+  }
+  .opts { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    display: flex; align-items: center; gap: 10px;
+    padding: 11px 14px; background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 9px; cursor: pointer; transition: all 0.18s; user-select: none;
+  }
+  .opt:hover:not(.disabled) { border-color: var(--accent); background: rgba(255,255,255,0.04); }
+  .opt.selected { border-color: var(--accent); background: rgba(255,255,255,0.05); }
+  .opt.cor { border-color: var(--green) !important; background: rgba(52,211,153,0.1) !important; }
+  .opt.wrn { border-color: var(--red) !important; background: rgba(248,113,113,0.1) !important; }
+  .opt.disabled { cursor: default; }
+  .opt-l {
+    font-family: 'Space Mono', monospace; font-size: 11px; font-weight: 700;
+    width: 22px; height: 22px; border-radius: 5px;
+    background: var(--border); color: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0; transition: all 0.18s;
+  }
+  .opt.selected .opt-l { background: var(--accent); color: #fff; }
+  .opt.cor .opt-l { background: var(--green); color: #fff; }
+  .opt.wrn .opt-l { background: var(--red); color: #fff; }
+  .opt-txt { font-size: 13.5px; line-height: 1.4; }
+  .exp {
+    margin-top: 14px; padding: 12px 14px;
+    background: rgba(255,255,255,0.03);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 7px 7px 0;
+    font-size: 12.5px; color: #8898b0; line-height: 1.65;
+    display: none;
+  }
+  .exp.show { display: block; }
+  .exp strong { color: var(--accent); }
+  code {
+    font-family: 'Space Mono', monospace; font-size: 11px;
+    background: rgba(255,255,255,0.08); padding: 1px 5px; border-radius: 3px; color: #7dd3fc;
+  }
+  #result {
+    display: none; text-align: center;
+    padding: 56px 28px; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 18px; margin-top: 28px; animation: up 0.5s ease;
+  }
+  .r-emoji { font-size: 60px; margin-bottom: 14px; }
+  .r-score {
+    font-family: 'Space Mono', monospace; font-size: 52px; font-weight: 700;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text; margin-bottom: 6px;
+  }
+  .r-label { font-size: 17px; font-weight: 600; margin-bottom: 6px; }
+  .r-sub { color: var(--muted); font-size: 13px; margin-bottom: 28px; }
+  .r-row { display: flex; justify-content: center; gap: 20px; margin-bottom: 28px; }
+  .r-item { text-align: center; padding: 14px 18px; background: var(--surface2); border-radius: 10px; min-width: 72px; }
+  .r-num { font-family: 'Space Mono', monospace; font-size: 22px; font-weight: 700; }
+  .r-num.g { color: var(--green); } .r-num.r { color: var(--red); } .r-num.y { color: var(--yellow); }
+  .r-lbl { font-size: 10px; color: var(--muted); margin-top: 3px; text-transform: uppercase; letter-spacing: 1px; }
+  .btn-sub {
+    display: block; width: 100%; max-width: 300px;
+    margin: 28px auto 0; padding: 15px 28px;
+    background: linear-gradient(135deg, var(--accent), var(--accent2));
+    border: none; border-radius: 10px; color: #fff;
+    font-family: 'Space Mono', monospace; font-size: 13px; font-weight: 700;
+    letter-spacing: 1px; cursor: pointer; transition: opacity 0.2s, transform 0.2s;
+  }
+  .btn-sub:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-sub:disabled { opacity: 0.35; cursor: not-allowed; transform: none; }
+  .btn-retry {
+    padding: 11px 24px; background: transparent;
+    border: 1px solid var(--accent); border-radius: 9px;
+    color: var(--accent); font-family: 'Space Mono', monospace; font-size: 12px;
+    cursor: pointer; transition: all 0.18s;
+  }
+  .btn-retry:hover { background: rgba(255,255,255,0.05); }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="nb-badge">Python ile Veri Analizi · Bolum III</div>
+  <h1>Pandas Ileri & Veri Manipulasyonu</h1>
+  <p class="header-sub">Gruplama · Birlestirme · Zaman Serisi · Metin</p>
+  <div class="stats">
+    <div><div class="stat-num">10</div><div class="stat-label">Soru</div></div>
+    <div><div class="stat-num">5</div><div class="stat-label">Konu</div></div>
+    <div><div class="stat-num">~8dk</div><div class="stat-label">Süre</div></div>
+  </div>
+</div>
+<div class="prog-bar-wrap">
+  <div class="prog-bar"><div class="prog-fill" id="pf"></div></div>
+  <div class="prog-text" id="pt">0 / 10</div>
+</div>
+<div class="container">
+  <div id="qform"></div>
+  <button class="btn-sub" id="sbtn" onclick="showResults()" disabled>SONUÇLARI GÖSTER →</button>
+  <div id="result">
+    <div class="r-emoji" id="re"></div>
+    <div class="r-score" id="rs"></div>
+    <div class="r-label" id="rl"></div>
+    <div class="r-sub" id="rsu"></div>
+    <div class="r-row">
+      <div class="r-item"><div class="r-num g" id="rc">0</div><div class="r-lbl">Doğru</div></div>
+      <div class="r-item"><div class="r-num r" id="rw">0</div><div class="r-lbl">Yanlış</div></div>
+      <div class="r-item"><div class="r-num y" id="rb">0</div><div class="r-lbl">Boş</div></div>
+    </div>
+    <button class="btn-retry" onclick="retryQuiz()">↺ Tekrar Dene</button>
+  </div>
+</div>
+<script>
+const QS = [{"topic": "Zaman Serisi", "text": "pd.to_datetime() fonksiyonunun temel amacı nedir?", "options": ["Tarih sütunlarını string'e çevirir", "String veya sayısal veriyi datetime tipine dönüştürür", "Yalnızca Unix timestamp çevirir", "İki tarih arasındaki farkı hesaplar"], "answer": 1, "explanation": "<code>pd.to_datetime()</code> string, int veya list formatındaki zaman bilgisini <strong>Timestamp/DatetimeIndex</strong>'e dönüştürür. Ardından .dt.year, .dt.month, .dt.dayofweek erişilebilir olur."}, {"topic": "Metin İşleme", "text": "Pandas'ta string operasyonları için hangi erişici (accessor) kullanılır?", "options": ["df['col'].string.upper()", "df['col'].str.upper()", "df['col'].text.upper()", "df['col'].apply(str.upper)"], "answer": 1, "explanation": "<code>.str</code> accessor'u string sütunlar üzerinde vektörize operasyonlar sağlar: .str.upper(), .str.contains(), .str.split(), .str.replace(). Loop yazmadan tüm sütuna uygulanır."}, {"topic": "Veri Birleştirme", "text": "pd.concat([df1,df2], axis=0) ile pd.concat([df1,df2], axis=1) farkı?", "options": ["axis=0 daha hızlıdır", "axis=0 satır ekler (alt alta), axis=1 sütun ekler (yan yana)", "axis=0 iç birleşim, axis=1 dış birleşimdir", "İkisi aynı sonucu verir"], "answer": 1, "explanation": "<code>axis=0</code> → alt alta (satır sayısı artar). <code>axis=1</code> → yan yana (sütun sayısı artar). İndeks uyumsuzluğu varsa ignore_index=True kullanılabilir."}, {"topic": "Veri Dönüşümü", "text": "df.melt() fonksiyonu ne işe yarar?", "options": ["Sayısal değerleri yuvarlar", "Geniş (wide) formatı uzun (long) formata dönüştürür", "Sütun isimlerini küçük harfe çevirir", "NaN değerleri önceki değerle doldurur"], "answer": 1, "explanation": "<code>df.melt()</code> → <strong>wide → long format</strong> dönüşümü. Birden fazla sütunu tek 'variable' ve 'value' çiftine dönüştürür. Tersi df.pivot(). Seaborn için long format tercih edilir."}, {"topic": "Gruplama İleri", "text": "df.groupby('A').transform('mean') ile df.groupby('A')['B'].mean() farkı?", "options": ["transform daha hızlıdır", "transform orijinal boyutu korur, mean gruplanmış özet döndürür", "İkisi aynı sonucu verir", "transform yalnızca string sütunlarda çalışır"], "answer": 1, "explanation": "<code>.mean()</code> → her grup için tek satır özet. <code>.transform('mean')</code> → her satır için kendi grubunun ortalamasını doldurur, <strong>orijinal boyutu korur</strong>."}, {"topic": "Performans", "text": "Pandas'ta büyük DataFrame'lerde bellek kullanımını azaltmak için ne yapılabilir?", "options": ["Tüm sütunları float64'e çevir", "int64 yerine int32/int16, object yerine category dtype kullan", "Tüm değerleri string'e çevir", "DataFrame'i parçalara böl"], "answer": 1, "explanation": "<strong>dtype optimizasyonu</strong>: int64→int8/16/32, float64→float32. Düşük kardinaliteli string sütunlar için category dtype: 'cinsiyet' gibi 2 değerli sütun %90 bellek tasarrufu sağlayabilir."}, {"topic": "Zaman Serisi", "text": "Zaman serisinde 7 günlük hareketli ortalama nasıl hesaplanır?", "options": ["df['col'].mean(7)", "df['col'].rolling(window=7).mean()", "df['col'].resample('7D').mean()", "df['col'].shift(7).mean()"], "answer": 1, "explanation": "<code>df['col'].rolling(window=7).mean()</code> → her nokta için önceki 7 değerin ortalaması. resample('7D') ise haftaya düşürme (downsampling) için kullanılır — farklı bir işlem."}, {"topic": "Veri Dönüşümü", "text": "df.assign() metodunun temel avantajı nedir?", "options": ["df['col']=val'dan daha hızlıdır", "Method chaining için orijinali bozmadan yeni sütun ekler", "Yalnızca sayısal sütun ekleyebilir", "Birden fazla DataFrame birleştirir"], "answer": 1, "explanation": "<code>df.assign(new_col=lambda x: x['a']+x['b'])</code> → <strong>orijinali değiştirmeden</strong> yeni DataFrame döndürür. Method chaining ile okunabilir pipeline: df.query(...).assign(...).groupby(...)"}, {"topic": "Veri Birleştirme", "text": "pd.merge() ile df.join() arasındaki temel fark nedir?", "options": ["join daha hızlıdır", "merge herhangi bir sütun, join ise index üzerinde birleştirir", "merge yalnızca eşit boyuttakilerde çalışır", "join SQL destekler, merge desteklemez"], "answer": 1, "explanation": "<code>merge()</code> → herhangi bir sütun üzerinde birleştirme. <code>join()</code> → varsayılan olarak <strong>index üzerinde</strong> birleştirir. join, merge'ün kullanım kolaylığı sağlayan özel halidir."}, {"topic": "Metin İşleme", "text": "Bir sütundaki sayıları regex ile temizlemek için hangisi kullanılır?", "options": ["df['col'].clean(r'\\d+')", "df['col'].str.replace(r'\\d+', '', regex=True)", "df['col'].apply(lambda x: x.strip('\\d+'))", "df['col'].str.remove(r'\\d+')"], "answer": 1, "explanation": "<code>df['col'].str.replace(pattern, replacement, regex=True)</code> → vektörize regex değiştirme. regex=True parametresi pandas 1.2+'da zorunlu hale geldi."}];
+let ans = new Array(QS.length).fill(null);
+let done = false;
+
+function buildQuiz() {
+  const f = document.getElementById('qform');
+  f.innerHTML = '';
+  const L = ['A','B','C','D'];
+  QS.forEach((q, qi) => {
+    const c = document.createElement('div');
+    c.className = 'q-card';
+    c.id = 'c' + qi;
+    c.style.setProperty('--i', qi);
+    let optsHtml = q.options.map((o, oi) =>
+      '<div class="opt" id="opt' + qi + '_' + oi + '" onclick="pickOpt(' + qi + ',' + oi + ')">' +
+      '<span class="opt-l">' + L[oi] + '</span>' +
+      '<span class="opt-txt">' + o + '</span></div>'
+    ).join('');
+    c.innerHTML =
+      '<div class="q-top"><span class="q-n">S' + (qi+1) + '</span><span class="q-txt">' + q.text + '</span></div>' +
+      '<div class="q-topic">' + q.topic + '</div>' +
+      '<div class="opts">' + optsHtml + '</div>' +
+      '<div class="exp" id="e' + qi + '">&#128161; ' + q.explanation + '</div>';
+    f.appendChild(c);
+  });
+}
+
+function pickOpt(qi, oi) {
+  if (done) return;
+  if (ans[qi] !== null) document.getElementById('opt' + qi + '_' + ans[qi]).classList.remove('selected');
+  ans[qi] = oi;
+  document.getElementById('opt' + qi + '_' + oi).classList.add('selected');
+  document.getElementById('c' + qi).classList.add('answered');
+  updateProgress();
+}
+
+function updateProgress() {
+  const n = ans.filter(a => a !== null).length;
+  document.getElementById('pf').style.width = (n / QS.length * 100) + '%';
+  document.getElementById('pt').textContent = n + ' / ' + QS.length;
+  document.getElementById('sbtn').disabled = (n < QS.length);
+}
+
+function showResults() {
+  if (done) return;
+  done = true;
+  document.getElementById('sbtn').style.display = 'none';
+  let cor = 0, wrn = 0, emp = 0;
+  QS.forEach((q, qi) => {
+    const ua = ans[qi], ra = q.answer;
+    const card = document.getElementById('c' + qi);
+    q.options.forEach((_, oi) => {
+      const el = document.getElementById('opt' + qi + '_' + oi);
+      el.classList.add('disabled');
+      if (oi === ra) el.classList.add('cor');
+    });
+    if (ua === null) { emp++; }
+    else if (ua === ra) {
+      cor++;
+      card.className = 'q-card correct';
+      document.getElementById('opt' + qi + '_' + ua).classList.remove('selected');
+    } else {
+      wrn++;
+      card.className = 'q-card wrong';
+      document.getElementById('opt' + qi + '_' + ua).classList.remove('selected');
+      document.getElementById('opt' + qi + '_' + ua).classList.add('wrn');
+    }
+    document.getElementById('e' + qi).classList.add('show');
+  });
+  const pct = Math.round(cor / QS.length * 100);
+  document.getElementById('rs').textContent = '%' + pct;
+  document.getElementById('rc').textContent = cor;
+  document.getElementById('rw').textContent = wrn;
+  document.getElementById('rb').textContent = emp;
+  const lvl = pct >= 90 ? ['&#127942;','Mukemmel!','Harika bir skor!'] :
+              pct >= 70 ? ['&#127919;','Cok Iyi!','Birkaç konuya tekrar bak.'] :
+              pct >= 50 ? ['&#128218;','Iyi Baslangic','Notebooku tekrar gozden gecir.'] :
+                          ['&#128170;','Devam Et!','Konulari yeniden calismani oneririm.'];
+  document.getElementById('re').innerHTML = lvl[0];
+  document.getElementById('rl').textContent = lvl[1];
+  document.getElementById('rsu').textContent = lvl[2];
+  const rp = document.getElementById('result');
+  rp.style.display = 'block';
+  rp.scrollIntoView({behavior:'smooth', block:'center'});
+  document.getElementById('pf').style.width = '100%';
+  document.getElementById('pt').textContent = 'Tamamlandi ✓';
+}
+
+function retryQuiz() {
+  ans = new Array(QS.length).fill(null);
+  done = false;
+  document.getElementById('result').style.display = 'none';
+  document.getElementById('sbtn').style.display = 'block';
+  document.getElementById('sbtn').disabled = true;
+  document.getElementById('pf').style.width = '0%';
+  document.getElementById('pt').textContent = '0 / ' + QS.length;
+  buildQuiz();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+buildQuiz();
+</script>
+</body>
+</html>
