@@ -33,7 +33,7 @@ Bu depo, Uygulamalı Makine Öğrenmesi eğitimi için hazırlanan 16 haftalık 
 ### BÖLÜM 4 — Kümeleme (Clustering)
 | Hafta | Konu | 📓 Notebook (.ipynb) | 📊 Sunum (.pptx) | 💾 Veri Seti |
 | :---: | :--- | :---: | :---: | :---: |
-| **11** | K-Means + Hiyerarşik | ⏳ Eklenecek | ⏳ Eklenecek | ⏳ Eklenecek |
+| **11** | K-Means + Hiyerarşik | [🔗 İncele](https://github.com/SevdanurGENC/Applied-Machine-Learning-Lecture-Notes/blob/main/Applied-Machine-Learning-Algorithms/Clustering/K_Means_Hierarchical_Clustering.ipynb) | [🔗 İncele](https://github.com/SevdanurGENC/Applied-Machine-Learning-Lecture-Notes/blob/main/Applied-Machine-Learning-Algorithms/Lecture-Notes/K_Means_Hierarchical_Clustering.pptx) | ⏳ Eklenecek |
 | **12** | DBSCAN + Küme Değerlendirme | ⏳ Eklenecek | ⏳ Eklenecek | ⏳ Eklenecek |
 | **13** | PCA / t-SNE Boyut İndirgeme | ⏳ Eklenecek | ⏳ Eklenecek | ⏳ Eklenecek |
 
