@@ -28,7 +28,7 @@ Bu depo, Uygulamalı Makine Öğrenmesi eğitimi için hazırlanan 16 haftalık 
 | :---: | :--- | :---: | :---: | :---: |
 | **8** | Doğrusal Regresyon Ridge / Lasso | ⏳ Eklenecek | ⏳ Eklenecek | ⏳ Eklenecek |
 | **9** | Polinom Regresyon + Overfitting / Bias | ⏳ Eklenecek | ⏳ Eklenecek | ⏳ Eklenecek |
-| **10** | Ağaç Tabanlı Regresyon + Karşılaştırma | 🔗 İncele(https://github.com/SevdanurGENC/Applied-Machine-Learning-Lecture-Notes/blob/main/Applied-Machine-Learning-Algorithms/Regression/Tree_Based_Regression.ipynb) | 🔗 İncele(https://github.com/SevdanurGENC/Applied-Machine-Learning-Lecture-Notes/blob/main/Applied-Machine-Learning-Algorithms/Lecture-Notes/Tree-Based-Regression.pptx) | ⏳ Eklenecek |
+| **10** | Ağaç Tabanlı Regresyon + Karşılaştırma | [🔗 İncele](https://github.com/SevdanurGENC/Applied-Machine-Learning-Lecture-Notes/blob/main/Applied-Machine-Learning-Algorithms/Regression/Tree_Based_Regression.ipynb) | [🔗 İncele](https://github.com/SevdanurGENC/Applied-Machine-Learning-Lecture-Notes/blob/main/Applied-Machine-Learning-Algorithms/Lecture-Notes/Tree-Based-Regression.pptx) | ⏳ Eklenecek |
 
 ### BÖLÜM 4 — Kümeleme (Clustering)
 | Hafta | Konu | 📓 Notebook (.ipynb) | 📊 Sunum (.pptx) | 💾 Veri Seti |
